@@ -17,7 +17,10 @@ std::vector<std::string> c_args_to_cpp_strings(char** argv)
 int main(int argc, char** argv)
 {
     std::vector<std::string> args = c_args_to_cpp_strings(argv);
-    args.erase(args.begin());   // 擦除第一个 arg，因为第一个是
+    args.erase(args.begin());   // 擦除第一个 arg，因为第一个是程序本身
+
+    // 默认执行$> foxrci build，若只有程序本身一个参数的话
+    if (args.size() == 0) args.push_back("build");
 
     // 创建 CommandReturnPackage
     Commands::CommandRetrunPackage pkg;
@@ -35,6 +38,7 @@ int main(int argc, char** argv)
             {
                 std::cout << "at: " << pkg.history_commands.at(pkg.history_commands.size() - 1) << std::endl;
                 std::cout << "err: " << pkg.error << std::endl;
+                continue;
             }
         }
 

@@ -45,12 +45,7 @@ bool addExtractFile(CommandRetrunPackage& pkg)
 bool init(CommandRetrunPackage& pkg)
 {
     // 如果上一条命令执行失败，则返回false
-    if (!addExtractFile(pkg))
-    {
-        std::cout << "at: " << pkg.history_commands.at(pkg.history_commands.size() - 1) << std::endl;
-        std::cout << "err: " << pkg.error << std::endl;
-        return false;
-    }
+    if (!addExtractFile(pkg)) return false;
     // 向 pkg 里面传递数据
     pkg.history_commands.push_back("init");
 
