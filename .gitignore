@@ -1,0 +1,13 @@
+*.o
+*.obj
+*.exe
+*.bin
+*.a
+*.ninja
+.ninja_deps
+.ninja_log
+build/
+CMakeFiles/
+CMakeCache.txt
+check_cache
+compile_commands.json

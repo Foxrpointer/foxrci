@@ -1,0 +1,9 @@
+# QuickJS 是第三方代码，不算进语言统计
+third-party/** linguist-vendored
+
+# 构建产物不算
+*.o binary
+*.obj binary
+*.exe binary
+*.a binary
+*.bin binary
