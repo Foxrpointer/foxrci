@@ -1,0 +1,4 @@
+C:/Users/Administrator/kyuujuus/foxrci/CMakeFiles/quickjs.dir
+C:/Users/Administrator/kyuujuus/foxrci/CMakeFiles/foxrci.dir
+C:/Users/Administrator/kyuujuus/foxrci/CMakeFiles/edit_cache.dir
+C:/Users/Administrator/kyuujuus/foxrci/CMakeFiles/rebuild_cache.dir

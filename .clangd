@@ -1,0 +1,6 @@
+CompileFlags:
+  # 让 clangd 向 MinGW g++ 查询系统 include 路径（等效 --query-driver）
+  Compiler: C:/Users/Administrator/mingw64/bin/g++.exe
+  # Zed 自带的 clangd 是 MSVC 目标编译的，显式切换到 MinGW 目标，
+  # 否则解析 MinGW 头文件（minwindef.h 等）会报 function-style cast 错误
+  Add: [-target, x86_64-w64-mingw32]

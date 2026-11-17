@@ -1,0 +1,17 @@
+# ninja log v7
+157	2272	8165764093737635	CMakeFiles/quickjs.dir/third-party/quickjs/cutils.c.obj	e44733c875ff2bcb
+120	3621	8165764093372406	CMakeFiles/quickjs.dir/third-party/quickjs/libunicode.c.obj	52f777d1d35b3c5a
+77	4217	8165764092982722	CMakeFiles/quickjs.dir/third-party/quickjs/libregexp.c.obj	957a3b96bb374457
+44	4580	8165964161442962	CMakeFiles/foxrci.dir/foxrci.cpp.obj	4f5ce9eb72fc0ea0
+59	9104	8165515135427246	CMakeFiles/foxrci.dir/commands/init.cpp.obj	963c1f593c4bfb87
+185	3301	8165764094311397	CMakeFiles/quickjs.dir/third-party/quickjs/dtoa.c.obj	7643cfd275fc7a50
+31	24733	8165764092450838	CMakeFiles/quickjs.dir/third-party/quickjs/quickjs.c.obj	937c691a89718983
+24735	25379	8165764339462445	libquickjs.a	3d3c0de695725627
+7909	9354	8165924401909040	foxrci.exe	441be1eb46f6963d
+83	6464	8165964161774301	CMakeFiles/foxrci.dir/commands/run_js.cpp.obj	fa8827d5d8e9910
+92	18025	8165966997279591	CMakeFiles/foxrci.dir/js-libc/console.cpp.obj	99df335165dedfd5
+28	18086	8165966996654560	CMakeFiles/foxrci.dir/js-libc/writefile.cpp.obj	14e8c9981c137609
+57	18685	8165966996967122	CMakeFiles/foxrci.dir/js-libc/cmdapply.cpp.obj	683a5c378342104
+18688	20705	8165967183147138	foxrci.exe	a45a0f9c43563007
+36	5878	8165970275198345	CMakeFiles/foxrci.dir/commands/run_js.cpp.obj	fa8827d5d8e9910
+5888	6867	8165970333841902	foxrci.exe	a45a0f9c43563007
