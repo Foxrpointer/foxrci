@@ -1,5 +1,5 @@
-#include "commands/init.hpp"
-#include "commands/run_js.hpp"
+#include "init.hpp"
+#include "parser/parser.hpp"
 #include "vector"
 #include <iostream>
 
@@ -12,6 +12,14 @@ std::vector<std::string> c_args_to_cpp_strings(char** argv)
         result.emplace_back(*p);
     }
     return result;
+}
+
+// 取最近一条命令名，防止 history_commands 为空时越界
+static const std::string& last_command(const Commands::CommandRetrunPackage& pkg)
+{
+    static const std::string unknown = "<unknown>";
+    if (pkg.history_commands.empty()) return unknown;
+    return pkg.history_commands.back();
 }
 
 int main(int argc, char** argv)
@@ -27,7 +35,7 @@ int main(int argc, char** argv)
 
     // 初始化 JS 运行时（整个程序共享一个上下文）
     // 在这个里面还有全局函数的注册
-    Commands::js_runtime_init();
+    Parser* parser = new Parser();
 
     // 命令
     for (std::string& arg : args)
@@ -36,7 +44,7 @@ int main(int argc, char** argv)
         {
             if (!Commands::init(pkg))
             {
-                std::cout << "at: " << pkg.history_commands.at(pkg.history_commands.size() - 1) << std::endl;
+                std::cout << "at: " << last_command(pkg) << std::endl;
                 std::cout << "err: " << pkg.error << std::endl;
                 continue;
             }
@@ -44,13 +52,13 @@ int main(int argc, char** argv)
 
         // 这个AI真的是瞎写 --kyuujuu 我改了一下
         // 直接执行 JS 文件，复用共享上下文
-        if (!Commands::run_js_file(arg + ".js", pkg))
+        if (!parser->run_js_file(arg + ".js", pkg))
         {
-            std::cout << "at: " << pkg.history_commands.at(pkg.history_commands.size() - 1) << std::endl;
+            std::cout << "at: " << last_command(pkg) << std::endl;
             std::cout << "err: " << pkg.error << std::endl;
         }
     }
 
     // 清理 JS 运行时
-    Commands::js_runtime_cleanup();
+    delete parser;
 }
