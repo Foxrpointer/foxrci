@@ -1,5 +1,6 @@
-#include "init.hpp"
+#include "commands/init.hpp"
 #include "parser/parser.hpp"
+#include "parser/module_loader.hpp"
 #include "vector"
 #include <iostream>
 
@@ -32,6 +33,13 @@ int main(int argc, char** argv)
 
     // 创建 CommandReturnPackage
     Commands::CommandRetrunPackage pkg;
+
+    // 加载 modules/ 目录下的动态库模块（取出 extract/register 入口）
+    if (!module_loader::load_all("modules", pkg))
+    {
+        std::cout << "at: " << last_command(pkg) << std::endl;
+        std::cout << "err: " << pkg.error << std::endl;
+    }
 
     // 初始化 JS 运行时（整个程序共享一个上下文）
     // 在这个里面还有全局函数的注册
