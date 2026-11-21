@@ -1,4 +1,5 @@
-#include "console.hpp"
+#include "module.hpp"
+#include "../../module_abi.hpp"
 #include <cstdio>
 #include <ctime>
 #include <string>
@@ -7,7 +8,7 @@
 #endif
 
 namespace console_host {
-namespace {  // 内部实现，不对外可见
+namespace {   // 类在本 .cpp 内部实现，不对外可见
 
 // ---------- 核心层（纯 C++，不认识 JS） ----------
 
@@ -54,18 +55,18 @@ void emit_line(const LevelStyle &style, const char *msg) {
     std::fflush(out);
 }
 
-// ---------- 胶水层 ----------
+// ---------- console 类 ----------
 
-// 四个级别共用一个实现，靠 magic（JS_NewCFunction 的最后一个参数）区分级别
-JSValue js_console(JSContext *ctx, JSValueConst, int argc, JSValueConst *argv, int magic) {
+// 四个级别共用一个实现，靠 magic（JS 类方法的 func_data）区分级别
+JSValue console_method(JSContext *ctx, JSValueConst this_val,
+                       int argc, JSValueConst *argv, int magic) {
     if (magic < 0 || magic > 3) return JS_ThrowInternalError(ctx, "console: bad magic");
     const LevelStyle &style = kStyles[magic];
 
-    // 多个参数用空格拼接，与浏览器 console.log(a, b) 行为一致
     std::string line;
     for (int i = 0; i < argc; i++) {
         const char *s = JS_ToCString(ctx, argv[i]);
-        if (!s) return JS_EXCEPTION;   // 转换失败，异常已设置
+        if (!s) return JS_EXCEPTION;
         if (i) line += ' ';
         line += s;
         JS_FreeCString(ctx, s);
@@ -74,21 +75,56 @@ JSValue js_console(JSContext *ctx, JSValueConst, int argc, JSValueConst *argv, i
     return JS_UNDEFINED;
 }
 
-JSValue js_console_log  (JSContext *c, JSValueConst t, int n, JSValueConst *a) { return js_console(c, t, n, a, 0); }
-JSValue js_console_info (JSContext *c, JSValueConst t, int n, JSValueConst *a) { return js_console(c, t, n, a, 1); }
-JSValue js_console_warn (JSContext *c, JSValueConst t, int n, JSValueConst *a) { return js_console(c, t, n, a, 2); }
-JSValue js_console_error(JSContext *c, JSValueConst t, int n, JSValueConst *a) { return js_console(c, t, n, a, 3); }
+JSValue console_ctor(JSContext *ctx, JSValueConst, int, JSValueConst *) {
+    return JS_NewObject(ctx);
+}
+
+JSValue console_log  (JSContext *c, JSValueConst t, int n, JSValueConst *a) { return console_method(c, t, n, a, 0); }
+JSValue console_info (JSContext *c, JSValueConst t, int n, JSValueConst *a) { return console_method(c, t, n, a, 1); }
+JSValue console_warn (JSContext *c, JSValueConst t, int n, JSValueConst *a) { return console_method(c, t, n, a, 2); }
+JSValue console_error(JSContext *c, JSValueConst t, int n, JSValueConst *a) { return console_method(c, t, n, a, 3); }
+
+const JSCFunctionListEntry console_proto_funcs[] = {
+    JS_CFUNC_DEF("log",   1, console_log),
+    JS_CFUNC_DEF("info",  1, console_info),
+    JS_CFUNC_DEF("warn",  1, console_warn),
+    JS_CFUNC_DEF("error", 1, console_error),
+};
 
 } // namespace
 
 void register_globals(JSContext *ctx) {
-    enable_ansi_color();   // Windows 上先开 VT 模式，再注册函数
+    enable_ansi_color();   // Windows 上先开 VT 模式，再注册类
+
+    JSValue proto = JS_NewObject(ctx);
+    JS_SetPropertyFunctionList(ctx, proto, console_proto_funcs,
+                               (int)(sizeof console_proto_funcs / sizeof *console_proto_funcs));
+
+    JSValue ctor = JS_NewCFunction2(ctx, console_ctor, "console", 0, JS_CFUNC_constructor, 0);
+    // console 作为“静态类”使用：方法直接挂在构造器上，new 也不报错
+    JS_SetPropertyFunctionList(ctx, ctor, console_proto_funcs,
+                               (int)(sizeof console_proto_funcs / sizeof *console_proto_funcs));
+    JS_SetConstructor(ctx, ctor, proto);
+
     JSValue g = JS_GetGlobalObject(ctx);
-    JS_SetPropertyStr(ctx, g, "console_log",   JS_NewCFunction(ctx, js_console_log,   "console_log",   1));
-    JS_SetPropertyStr(ctx, g, "console_info",  JS_NewCFunction(ctx, js_console_info,  "console_info",  1));
-    JS_SetPropertyStr(ctx, g, "console_warn",  JS_NewCFunction(ctx, js_console_warn,  "console_warn",  1));
-    JS_SetPropertyStr(ctx, g, "console_error", JS_NewCFunction(ctx, js_console_error, "console_error", 1));
+    JS_SetPropertyStr(ctx, g, "console", ctor);
     JS_FreeValue(ctx, g);
+    JS_FreeValue(ctx, proto);
 }
 
 } // namespace console_host
+
+// ---------- 动态库导出 ----------
+
+extern "C" __declspec(dllexport)
+bool foxrci_module_extract(Commands::CommandRetrunPackage &) {
+    // console 模块没有需要落盘的前置 js 文件
+    return true;
+}
+
+extern "C" __declspec(dllexport)
+bool foxrci_module_register(JSContext *ctx, Commands::CommandRetrunPackage &pkg) {
+    pkg.history_commands.push_back("module:console.register");
+    console_host::register_globals(ctx);
+    return true;
+}
